@@ -1,0 +1,45 @@
+CREATE TABLE IF NOT EXISTS `fleet_vehicles` (
+    `id`                  INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    `org_type`            ENUM('job','gang') NOT NULL,
+    `org_name`            VARCHAR(50)       NOT NULL,
+    `model`               VARCHAR(50)       NOT NULL,
+    `label`               VARCHAR(64)       NOT NULL,
+    `plate`               VARCHAR(8)        NOT NULL,
+    `callsign`            VARCHAR(16)       NULL,
+    `category`            VARCHAR(32)       NOT NULL,
+    `garage`              VARCHAR(32)       NOT NULL,
+    `status`              ENUM('available','in_use','out_of_service','maintenance','impounded','missing') NOT NULL DEFAULT 'available',
+    `min_grade`           SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    `current_holder`      VARCHAR(64)       NULL,
+    `current_holder_name` VARCHAR(64)       NULL,
+    `last_holder`         VARCHAR(64)       NULL,
+    `last_holder_name`    VARCHAR(64)       NULL,
+    `checked_out_at`      TIMESTAMP         NULL DEFAULT NULL,
+    `returned_at`         TIMESTAMP         NULL DEFAULT NULL,
+    `fuel`                FLOAT             NOT NULL DEFAULT 100,
+    `engine_health`       FLOAT             NOT NULL DEFAULT 1000,
+    `body_health`         FLOAT             NOT NULL DEFAULT 1000,
+    `dirt_level`          FLOAT             NOT NULL DEFAULT 0,
+    `properties`          LONGTEXT          NULL,
+    `metadata`            LONGTEXT          NULL,
+    `created_at`          TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`          TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uniq_plate` (`plate`),
+    KEY `idx_org` (`org_type`, `org_name`),
+    KEY `idx_status` (`status`)
+);
+
+-- No foreign key on purpose: history outlives removed vehicles for auditing.
+CREATE TABLE IF NOT EXISTS `fleet_vehicle_history` (
+    `id`               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `vehicle_id`       INT UNSIGNED NOT NULL,
+    `action`           VARCHAR(32)  NOT NULL,
+    `actor_identifier` VARCHAR(64)  NULL,
+    `actor_name`       VARCHAR(64)  NULL,
+    `data`             LONGTEXT     NULL,
+    `created_at`       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_vehicle` (`vehicle_id`, `id`),
+    KEY `idx_created` (`created_at`)
+);
